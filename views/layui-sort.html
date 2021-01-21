@@ -66,7 +66,7 @@
             let tableStr = '';
             data.forEach(function(item, index) {
                 // console.log(item);
-                let {name,sort,add_date,cate_id} = item;
+                let {name,sort,add_date,cat_id} = item;
                 add_date = util.util_time(add_date);
                 tableStr += `
                     <tr>
@@ -78,8 +78,8 @@
 
 
                             <div class="layui-btn-group">
-                    <button title='编辑' type="button" class="layui-btn "><i class="layui-icon">&#xe642;</i></button>
-                    <button title='删除' cat_id='${cate_id}' type="button" class="layui-btn layui-btn-danger del"><i class="layui-icon">&#xe640;</i></button>
+                    <button title='编辑' cat_id='${cat_id}' type="button" class="layui-btn  edit"><i class="layui-icon">&#xe642;</i></button>
+                    <button title='删除' cat_id='${cat_id}' type="button" class="layui-btn layui-btn-danger del"><i class="layui-icon">&#xe640;</i></button>
                   </div>
                         </td>
                     </tr>
@@ -106,9 +106,9 @@
         $('#tbody').on('click', '#delete', function() { 
             // 由于数据是动态创建的,所有要用事件委托
             let _this = $(this);
-            // 获取自定义属性 cate_id
-            let cate_id = _this.attr('cate_id');
-            // layer.msg (cate_id);
+            // 获取自定义属性 cat_id
+            let cat_id = _this.attr('cat_id');
+            // layer.msg (cat_id);
             layer.confirm('确认删除吗', {
                 btn: ['是的', '取消'] //按钮
             }, function() {
@@ -116,7 +116,7 @@
                     type: 'post',
                     url: "/deleteSort",
                     data: {
-                        cate_id
+                        cat_id
                     },
                     dataType: "json"
                 }).then(res => {
@@ -148,7 +148,14 @@
         // 添加数据
         $('#add').on('click',function(){
             location.href='/catadd'
+        });
+        // 编辑跳转
+        $('tbody').on('click','.edit',function(){
+            let cat_id=$(this).attr('cat_id')
+            location.href='/catedit?cat_id='+cat_id
         })
+
+
     </script>
 
    

@@ -41,7 +41,7 @@
                     </div>
                     <div class="layui-form-item">
                         <div class="layui-input-block">
-                            <button class="layui-btn" lay-submit lay-filter="formDemo">添加</button>
+                            <button class="layui-btn" lay-submit lay-filter="formDemo">编辑</button>
                             <button type="reset" class="layui-btn layui-btn-primary">重置</button>
                         </div>
                     </div>
@@ -54,7 +54,29 @@
     </div>
     <script src="public/layui/layui.js"></script>
     <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.js"></script>
+    <script src="/public/js/moment.js"></script>
+    <script src="/public/js/util_time.js"></script>
     <script>
+        // 获取的地址栏中的cat_id的参数
+        let url = location.href;
+        let reg=/cat_id=(.*)&?/;
+        let [,cat_id]=[...reg.exec(url)]
+        // console.log(cat_id);
+        $.ajax({
+            url:'/getOneCate?cat_id='+cat_id,
+        }).then(res=>{
+            // console.log(res);
+            let {errcode,name,sort,add_date,cat_id}=res;
+            add_date = util.util_time(add_date)
+            if(errcode==0){
+                $("input[name='name']").val(name)
+                $("input[name='sort']").val(sort)
+                $("input[name='add_date']").val(add_date)
+            }
+            
+        })
+        
+
         //JavaScript代码区域
         layui.use(['element','form','layer','laydate'], function() {
             var element = layui.element;
@@ -68,11 +90,15 @@
                 // layer.msg(JSON.stringify(data.field));
 
                 let oldText=data.elem.innerText;
-                $(data.elem).addClass('layui-btn-disabled').text('添加中')
+                $(data.elem).addClass('layui-btn-disabled').text('编辑中')
+                data={
+                    ...data.field,
+                    cat_id
+                }
                 $.ajax({
                     type:'post',
-                    url:'/postCat',
-                    data:data.field,
+                    url:'/updCate',
+                    data:data,
                 }).then(res=>{
                     $(data.ele).removeClass('layui-btn-disabled').text(oldText)
                     let {errcode,message}=res;
