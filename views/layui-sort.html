@@ -4,8 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>layout 后台大布局 - Layui</title>
-    <link rel="stylesheet" href="/public/layui/css/layui.css">
+    {{ include './common_tags/linkcss.html'}}
 </head>
 
 <body class="layui-layout-body">
@@ -55,12 +54,24 @@
         {{ include './common_tags/footer.html'}}
 
     </div>
-    <script src="/public/layui/layui.all.js"></script>
-    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.js"></script>
-    <script src="/public/js/moment.js"></script>
-    <script src="/public/js/util_time.js"></script>
+    {{ include './common_tags/scriptjs.html'}}
+
+
 
     <script>
+    //         function startNProgress(){
+    //     NProgress.set(0.4);// 默认设置40% NProgress.set(0) 等价与 NProgress.start()
+    //     let interval = setInterval(function(){
+    //         NProgress.inc(); // 以小量递增
+    //     },200)
+
+    //     $(window).on('load',()=>{
+    //         clearInterval(interval)
+    //         NProgress.done()
+    //     })
+    // }
+
+    // startNProgress();
         // 动态创建 table 标签,追加到表格里
         function appendTable(data) {
             let tableStr = '';

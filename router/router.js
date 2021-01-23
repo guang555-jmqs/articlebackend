@@ -5,6 +5,8 @@ let router = express.Router();
 
 //  导入控制器
 let Sortcontroller = require('../controller/Sortcontroller.js');
+let ArtController = require('../controller/ArtController.js');
+
 // console.log(Sortcontroller);
 
 // 在路由器身上绑定路由
@@ -29,6 +31,19 @@ router.get('/catedit',Sortcontroller.catedit)
 
 // 编辑分类的接口
 router.post('/updCate',Sortcontroller.updCate)
+
+// 获取文章数据的接口
+router.get('/allarticle',ArtController.allArticle)
+
+// 删除文章的接口
+router.post('/delArticle',ArtController.delArticle)
+
+// 渲染出添加文章的页面
+router.get('/addart',ArtController.artAdd)
+
+// 渲染出编辑文章的页面的接口
+router.get('/artedit',ArtController.artEdit)
+
 
 // 匹配失败的的路由
 router.all('*',(req,res)=>{

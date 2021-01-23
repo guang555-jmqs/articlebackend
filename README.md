@@ -9,6 +9,10 @@
 
 - npm i 安装依赖
 
-- 更换数据库
+- 修改数据库配置文件
 
-  
+
+
+## 运行NProgress
+
+-高版本jQuery不支持$(window).load()写法 改为$(window).on('load')写法即可

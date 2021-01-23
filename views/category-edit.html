@@ -4,8 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>layout 后台大布局 - Layui</title>
-    <link rel="stylesheet" href="/public/layui/css/layui.css">
+    {{ include './common_tags/linkcss.html'}}
 </head>
 
 <body class="layui-layout-body">
@@ -52,10 +51,9 @@
         <!-- 底部区域 -->
         {{ include './common_tags/footer.html'}}
     </div>
-    <script src="public/layui/layui.js"></script>
-    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.js"></script>
-    <script src="/public/js/moment.js"></script>
-    <script src="/public/js/util_time.js"></script>
+    {{ include './common_tags/scriptjs.html'}}
+
+
     <script>
         // 获取的地址栏中的cat_id的参数
         let url = location.href;

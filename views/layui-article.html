@@ -4,8 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>layout 后台大布局 - Layui</title>
-    <link rel="stylesheet" href="/public/layui/css/layui.css">
+    {{ include './common_tags/linkcss.html'}}
 </head>
 
 <body class="layui-layout-body">
@@ -16,57 +15,196 @@
         <!-- 左侧导航区域 -->
         {{ include './common_tags/side.html'}}
 
-        <!-- 内容主体区域 -->
         <div class="layui-body">
+
+            <!-- 内容主体区域 -->
+
             <div style="padding: 15px;">
                 <h2>文章管理</h2>
-                <table class="layui-table" lay-size="sm">
-                    <colgroup>
-                        <col width="150">
-                        <col width="200">
-                        <col>
-                    </colgroup>
-                    <thead>
-                        <tr>
-                            <th>序号</th>
-                            <th>分类</th>
-                            <th>排序</th>
-                            <th>添加时间</th>
-                            <th>操作</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>1</td>
-                            <td>娱乐</td>
-                            <td>1</td>
-                            <td>2016-11-29</td>
-                            <td>编辑|删除</td>
-                        </tr>
-                        <tr>
-                            <td>许闲心</td>
-                            <td>2016-11-28</td>
-                            <td>于千万人之中遇见你所遇见的人，于千万年之中，时间的无涯的荒野里…</td>
-                        </tr>
-                        <tr>
-                            <td>sentsin</td>
-                            <td>2016-11-27</td>
-                            <td> Life is either a daring adventure or nothing.</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div>
+                    <button type="button" id="add" class="layui-btn" >
+                        <i class="layui-icon">&#xe608;</i> 添加分类
+                      </button>
+                </div>
+                
+                <table class="layui-hide" id="test" lay-filter="test"></table>
             </div>
+
+            <script type="text/html" id="barDemo">
+                <a class="layui-btn layui-btn-xs" lay-event="show">查看内容</a>
+                <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+                <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+            </script>
+
+
         </div>
 
         <!-- 底部区域 -->
         {{ include './common_tags/footer.html'}}
     </div>
-    <script src="/public/layui/layui.js"></script>
+    {{ include './common_tags/scriptjs.html'}}
+
+
     <script>
         //JavaScript代码区域
-        layui.use('element', function() {
+        layui.use(['element', 'table','layer'], function () {
             var element = layui.element;
+            var table = layui.table;
+            // 动态表格 设置自己的接口 连接自己的数据库 获取数据
+            let tableUI=table.render({
+                elem: '#test',
+                url: '/allarticle',
+                cellMinWidth: 100,
+                toolbar: '#toolbarDemo' //开启头部工具栏，并为其绑定左侧模板
+                    ,
+                defaultToolbar: ['filter', 'exports', 'print', { //自定义头部工具栏右侧图标。如无需自定义，去除该参数即可
+                    title: '提示',
+                    layEvent: 'LAYTABLE_TIPS',
+                    icon: 'layui-icon-tips'
+                }],
+                limit: 7,
+                limits: [5, 10, 15, 20],
+                title: '用户数据表',
+                cols: [
+                    [{
+                            type: 'checkbox',
+                            fixed: 'left'
+                        }, {
+                            field: 'art_id',
+                            title: 'ID',
+                            width: 80,
+                            fixed: 'left',
+                            unresize: true,
+                            sort: true,
+                            hide:true
+                        }, {
+                            field: 'title',
+                            title: '文章标题',
+                            width: 120,
+                            edit: 'text'
+                        }, {
+                            field: 'contet',
+                            title: '内容',
+                            width: 150,
+                            edit: 'text',
+                        }, {
+                            field: 'cat_id',
+                            title: '所属分类',
+                            width: 80,
+                            edit: 'text',
+                            sort: true
+                        }, {
+                            field: 'author',
+                            title: '作者',
+                            width: 100
+                        }, {
+                            field: 'cover',
+                            title: '图片'
+                        }, {
+                            field: 'status',
+                            title: '文章状态',
+                            width: 80,
+                            sort: true,
+                            // 映射关系
+                            templet: (item) => {
+                                let statusMap = {
+                                    '0': '未发布',
+                                    '1': '已发布',
+                                    '2': '审核中'
+                                }
+                                return statusMap[item.status]//status就是状态
+                            }
+                        }
+                        //   ,{field:'ip', title:'IP', width:120}
+                        , {
+                            field: 'publish_date',
+                            title: '发布时间',
+                            sort: true,
+                            templet(item) {
+                                //   格式化时间
+                                let {
+                                    publish_date
+                                } = item;
+                                return util.util_time(publish_date)
+                            }
+                        }
+                        //   ,{field:'joinTime', title:'加入时间', width:120}
+                        , {
+                            fixed: 'right',
+                            title: '操作',
+                            toolbar: '#barDemo',
+                            width: 200
+                        }
+                    ]
+                ],
+                page: true
+            });
+            //监听业务逻辑事件
+            table.on('tool(test)', function (obj) {
+                let {
+                    data,
+                    event
+                } = obj
+                let {art_id} = data;
+                switch (event) {
+                    // 删除
+                    case 'del':
+                        del(art_id)
+                        break;
+                        // 编辑
+                    case 'edit':
+                        edit(art_id)
+                        break;
+                    
 
+                }
+            });
+            //删除文章
+            function del(art_id) {
+
+
+                //询问框
+                layer.confirm('确认删除？', {
+                    btn: ['是的', '取消？'] //按钮
+                }, function () {
+                //   发送ajax请求
+                    $.ajax({
+                        type:'post',
+                        url:'/delArticle',
+                        data:{art_id},
+                        // 解构对象里面的形参
+                        success({errcode,message}){
+                            // console.log(res);
+                            // let {errcode,message}=res;
+                            // 疯狂模式
+                            layer.closeAll();
+                            if(errcode == 0){
+                                // 重新加载(仅当前表格) 不会导致全局加载
+                                tableUI.reload()
+                                // 这个加载 会全局加载 体验不好
+                                // location.reload()
+                                layer.msg(message)
+                            }
+                            
+                        }
+                    })
+                // }, function () {
+                //     layer.msg('也可以这样', {
+                //         time: 20000, //20s后自动关闭
+                //         btn: ['明白了', '知道了']
+                //     });
+                });
+            }
+            
+            // 跳转到文章编辑页面
+            function edit(art_id){
+                location.href=`/artedit?art_id=${art_id}`
+            }
+            // 跳转到文章添加页面
+            $('#add').on('click',()=>{
+                location.href='/addart'
+            })
+       
         });
     </script>
 </body>

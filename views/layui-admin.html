@@ -4,8 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>layout 后台大布局 - Layui</title>
-    <link rel="stylesheet" href="/public/layui/css/layui.css">
+    {{ include './common_tags/linkcss.html'}}
 </head>
 
 <body class="layui-layout-body">
@@ -26,7 +25,8 @@
         {{ include './common_tags/footer.html'}}
 
     </div>
-    <script src="/public/layui/layui.js"></script>
+    {{ include './common_tags/scriptjs.html'}}
+
     <script>
         //JavaScript代码区域
         layui.use('element', function() {
