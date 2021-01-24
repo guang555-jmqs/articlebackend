@@ -1,6 +1,6 @@
 // 文章控制器
 let ArtController = {}
-
+const fs=require('fs')
 // 导入模拟(mock)的假数据
 let articleData=require('../mockData/article.json')
 // 解构赋值   
@@ -14,7 +14,10 @@ ArtController.allArticle = async (req,res)=>{
     let {page,limit:pagesize}=req.query;
     // sql语句
     let offset = (page - 1)*pagesize;//分页算法得出的 当前页码-1 *每页显示的条数
-    let sql = `select * from article limit ${offset},${pagesize}`
+    // let sql = `select * from article order by art_id desc limit ${offset},${pagesize}`
+    let sql = `select t1.*,t2.name from article t1 left join category t2 on t1.cat_id = t2.cat_id 
+                order by art_id desc limit ${offset},${pagesize}`;
+
     let sql2 =`select count(*) as count from article`;
     // let promise1 =  mysqlquery(sql); // [{},{},{}] 返回的数组 里面是对象
     // let data= await mysqlquery(sql);//[{},{},{}] 返回的数组 里面是对象
@@ -50,6 +53,58 @@ ArtController.artEdit=(req,res)=>{
 // 渲染出文章添加的页面
 ArtController.artAdd=(req,res)=>{
     res.render('layui-add.html')
+}
+
+// 文章数据入库
+ArtController.postArt = async (req,res)=>{
+    let {title,cat_id,status,content,cover}=req.body;
+    let sql = `insert into article(title,cat_id,status,content,cover,publish_date) 
+                values('${title}','${cat_id}','${status}','${content}','${cover}',now())`
+    let result= await mysqlquery(sql);
+    if(result.affectedRows){
+        res.json(issucc)
+    }else{
+        res.json(isfail)
+    }
+}
+
+//实现文件上传
+ArtController.upload = (req,res)=>{
+    // console.log(req.file); //接收文件上传成功后的信息
+    if(req.file){
+        // 进行文件的重命名即可 fs.rename
+        let {originalname,destination,filename} = req.file;
+        let dotIndex = originalname.lastIndexOf('.');
+        let ext = originalname.substring(dotIndex);
+        let oldPath = `${destination}${filename}`;
+        let newPath = `${destination}${filename}${ext}`;
+        fs.rename(oldPath,newPath,err=>{
+            if(err){ throw err; }
+            res.json({message:'上传成功',code: 0,src:newPath})
+        })
+    }else{
+        res.json({message:'上传失败',code: 1,src:''})
+    }
+}
+
+// 修改文章的状态
+ArtController.updStatus= async (req,res)=>{
+    let {art_id,status}=req.body;
+    let sql=`update article set status = ${status} where art_id = ${art_id}`;
+    let result=await mysqlquery(sql);
+    if(result.affectedRows){
+        res.json(issucc)
+    }else{
+        res.json(isfail)
+    }
+}
+
+// 获取单条文章
+ArtController.getOneArt= async (req,res)=>{
+    let {art_id}=req.query;
+    let sql = `select * from article where art_id =${art_id}`;
+    let data= await mysqlquery(sql);
+    res.json(data[0] || {})//如果是空就返回一个空对象 不会报错
 }
 // 暴露模块
 module.exports=ArtController;

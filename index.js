@@ -16,6 +16,9 @@ app.use(express.static(path.join(__dirname)));
 app.use(express.json()) // for parsing application/json
 app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 
+// 上传图片路径的中间件
+app.use('uploads',express.static(path.join(__dirname,'uploads')))
+
 // 配置模板的路径
 app.set('views', __dirname + '/views/');
 

@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     {{ include './common_tags/linkcss.html'}}
+    <link rel="stylesheet" href="/public/css/lightbox.css">
 </head>
 
 <body class="layui-layout-body">
@@ -30,11 +31,11 @@
                 <table class="layui-hide" id="test" lay-filter="test"></table>
             </div>
 
-            <script type="text/html" id="barDemo">
+            <!-- <script type="text/html" id="barDemo">
                 <a class="layui-btn layui-btn-xs" lay-event="show">查看内容</a>
                 <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
                 <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
-            </script>
+            </script> -->
 
 
         </div>
@@ -43,6 +44,7 @@
         {{ include './common_tags/footer.html'}}
     </div>
     {{ include './common_tags/scriptjs.html'}}
+    <script src="/public/js/lightbox-plus-jquery.min.js"></script>
 
 
     <script>
@@ -83,34 +85,41 @@
                             width: 120,
                             edit: 'text'
                         }, {
-                            field: 'contet',
+                            field: 'content',
                             title: '内容',
                             width: 150,
                             edit: 'text',
                         }, {
-                            field: 'cat_id',
+                            field: 'name',
                             title: '所属分类',
                             width: 80,
                             edit: 'text',
-                            sort: true
+                            sort: false
                         }, {
                             field: 'author',
                             title: '作者',
-                            width: 100
+                            width: 80
                         }, {
                             field: 'cover',
-                            title: '图片'
+                            title: '图片',
+                            width:100,
+                            templet({cover}){
+                            let imgStr = `<a class="example-image-link" href="${cover}" data-lightbox="example-1" data-title="图片">
+                        <img class="example-image" src="${cover}" alt="暂无图片" />
+                    </a>`;
+                                return imgStr;
+                            }
                         }, {
                             field: 'status',
                             title: '文章状态',
-                            width: 80,
+                            width: 110,
                             sort: true,
                             // 映射关系
                             templet: (item) => {
                                 let statusMap = {
-                                    '0': '未发布',
-                                    '1': '已发布',
-                                    '2': '审核中'
+                                    '0': '<span class="layui-badge">未发布</span>',
+                                    '1': '<span class="layui-badge layui-bg-green">已发布</span>',
+                                    '2': '<span class="layui-badge layui-bg-orange">未通过</span>'
                                 }
                                 return statusMap[item.status]//status就是状态
                             }
@@ -132,8 +141,23 @@
                         , {
                             fixed: 'right',
                             title: '操作',
-                            toolbar: '#barDemo',
-                            width: 200
+                            // toolbar: '#barDemo',
+                            width: 266,
+                            templet({status}){
+                                let temStr=`<a class="layui-btn layui-btn-xs" lay-event="show">查看内容</a>`
+                                // 状态0 未发布 进行审核
+                                switch(status){
+                                    case 0:
+                                        temStr += `<a class="layui-btn layui-btn-xs layui-bg-orange" lay-event="verify">待审核</a>`
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                temStr +=`
+                                <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+                                <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>`
+                                return temStr;
+                            }
                         }
                     ]
                 ],
@@ -145,7 +169,8 @@
                     data,
                     event
                 } = obj
-                let {art_id} = data;
+                //data就是当前一行的记录
+                let {art_id,content,title} = data;
                 switch (event) {
                     // 删除
                     case 'del':
@@ -155,10 +180,30 @@
                     case 'edit':
                         edit(art_id)
                         break;
+                    case 'verify'://待审核
+                        verify(art_id)
+                        break;
+                    case 'show'://查看
+                        showContent(content,title)
+                        break;
+                    
                     
 
                 }
             });
+
+            // 显示编辑内容
+            function showContent(content,title){
+            //页面层
+            layer.open({
+            title:title,
+            type: 1,
+            skin: 'layui-layer-rim', //加上边框
+            area: ['800px', '500px'], //宽高
+            content: "<div style='padding:20px'>"+content+"</div>"
+                });
+            }
+            
             //删除文章
             function del(art_id) {
 
@@ -200,6 +245,29 @@
             function edit(art_id){
                 location.href=`/artedit?art_id=${art_id}`
             }
+
+            // 审核文章
+            function verify(art_id){
+            //询问框
+            layer.confirm('是否通过审核？', {
+            btn: ['通过','不通过'] //按钮
+            }, function(){
+                changeStatus(art_id,1)
+            }, function(){
+                changeStatus(art_id,2)
+
+            });
+        }
+
+         function changeStatus(art_id,status,title){
+                $.post('/updstatus',{art_id,status},({errcode,message})=>{
+                    if(errcode == 0){
+                        tableUI.reload();
+                    }
+                    layer.msg(message)
+                },'json')
+            }
+
             // 跳转到文章添加页面
             $('#add').on('click',()=>{
                 location.href='/addart'

@@ -3,6 +3,8 @@ const express = require('express');
 // 得到一个路由器
 let router = express.Router();
 
+var multer  = require('multer')
+var upload = multer({ dest: 'uploads/' })
 //  导入控制器
 let Sortcontroller = require('../controller/Sortcontroller.js');
 let ArtController = require('../controller/ArtController.js');
@@ -43,6 +45,19 @@ router.get('/addart',ArtController.artAdd)
 
 // 渲染出编辑文章的页面的接口
 router.get('/artedit',ArtController.artEdit)
+
+//提交文章的数据入库
+router.post('/postArt',ArtController.postArt)
+
+
+// 上传文件的接口
+router.post('/upload',upload.single('file'),ArtController.upload)
+
+//修改文章的状态
+router.post('/updStatus',ArtController.updStatus)
+
+//获取单条文章数据的接口
+router.get('/getOneArt',ArtController.getOneArt)
 
 
 // 匹配失败的的路由

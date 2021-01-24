@@ -13,7 +13,7 @@ joinData.connect(err => {
     if (err) {
         throw err;
     }
-    console.log('connection is successful');
+    console.log('数据库连接成功');
 });
 
 function mysqlquery(sql) {

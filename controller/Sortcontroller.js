@@ -1,6 +1,5 @@
 // 控制器
 // 引入 mysql 数据库 query
-// let mysqlquery = require('../util/query.js');
 const mysqlquery=require('../util/query.js')
 // 解构赋值   
 let { delete_success, delete_fail, delete_abnormal, message_err ,updsucc,updfail,issucc,isfail} = require('../util/resMesssge.js');
