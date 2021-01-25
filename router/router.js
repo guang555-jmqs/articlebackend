@@ -8,11 +8,31 @@ var upload = multer({ dest: 'uploads/' })
 //  导入控制器
 let Sortcontroller = require('../controller/Sortcontroller.js');
 let ArtController = require('../controller/ArtController.js');
+let UserController=require('../controller/UserController.js')
 
+let mysqlquery=require('../util/query.js')
+
+
+// 统计出分类的文章总数
+router.get('/cateCount',async (req,res)=>{
+    let sql = `select count(*) total ,t2.name,t1.cat_id from article t1 
+                left join category t2 
+                on t1.cat_id = t2.cat_id 
+                group by  t1.cat_id`;
+    let data = await mysqlquery(sql); // [{},{},{},{}]
+    res.json(data)
+})
 // console.log(Sortcontroller);
 
 // 在路由器身上绑定路由
-router.get(/^\/$|^\/admin$/, Sortcontroller.admin); 
+// router.get(/^\/$|^\/admin$/, Sortcontroller.admin); 
+router.get(/^\/$|^\/admin$/, (req,res)=>{
+    // let data={
+    //     userInfo:req.session.userInfo
+    // }
+    res.render('layui-admin.html')
+}); 
+
 router.get('/article', Sortcontroller.article); 
 router.get('/sort', Sortcontroller.sort);
 router.get('/add', Sortcontroller.add);
@@ -59,6 +79,30 @@ router.post('/updStatus',ArtController.updStatus)
 //获取单条文章数据的接口
 router.get('/getOneArt',ArtController.getOneArt)
 
+//编辑文章的数据接口
+router.post('/updArt',ArtController.updArt)
+
+// 系统登录的页面
+router.get('/login',(req,res)=>{
+        // 如果有用户信息 用户再次访问 直接重定向到首页
+        if(req.session.userInfo){
+            res.redirect('/');
+            return;
+        }
+    res.render('login.html')
+})
+
+// 登录系统的接口
+router.post('/singin',UserController.singin)
+
+// 退出登录系统的接口
+router.get('/logout',(req,res)=>{
+    // 清空session并重定向到登录页面
+    req.session.destroy(err=>{
+        if(err){throw err;}
+    })
+    res.json({message:'退出成功'})
+})
 
 // 匹配失败的的路由
 router.all('*',(req,res)=>{

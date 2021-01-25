@@ -52,14 +52,18 @@ ArtController.artEdit=(req,res)=>{
 }
 // 渲染出文章添加的页面
 ArtController.artAdd=(req,res)=>{
+    // let data={
+    //     userInfo:req.session.userInfo
+    // }
     res.render('layui-add.html')
 }
 
 // 文章数据入库
 ArtController.postArt = async (req,res)=>{
     let {title,cat_id,status,content,cover}=req.body;
-    let sql = `insert into article(title,cat_id,status,content,cover,publish_date) 
-                values('${title}','${cat_id}','${status}','${content}','${cover}',now())`
+    let username=req.session.userInfo.username
+    let sql = `insert into article(title,content,author,cat_id,status,cover,publish_date) 
+                values('${title}','${content}','${username}','${cat_id}','${status}','${cover}',now())`
     let result= await mysqlquery(sql);
     if(result.affectedRows){
         res.json(issucc)
@@ -105,6 +109,29 @@ ArtController.getOneArt= async (req,res)=>{
     let sql = `select * from article where art_id =${art_id}`;
     let data= await mysqlquery(sql);
     res.json(data[0] || {})//如果是空就返回一个空对象 不会报错
+}
+
+// 编辑文章数据入库
+ArtController.updArt= async (req,res)=>{
+    // 接收post参数
+    let {cover,title,cat_id,art_id,content,status,oldImg}=req.body
+    //执行sql语句
+    let sql;
+    if(cover){
+        sql=`update article set title='${title}',content='${content}',cover='${cover}',cat_id=${cat_id}
+        ,status=${status} where art_id=${art_id};`
+    }else{
+        sql=`update article set title='${title}',content='${content}',cat_id=${cat_id}
+        ,status=${status} where art_id=${art_id};`
+    }
+    let result=await mysqlquery(sql)
+    //响应结果
+    if(result.affectedRows){
+        cover&&fs.unlinkSync(oldImg)
+        res.json(issucc)
+    }else{
+        res.json(isfail)
+    }
 }
 // 暴露模块
 module.exports=ArtController;
