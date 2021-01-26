@@ -11,18 +11,25 @@ let mysqlquery=require('../util/query.js')
 // 获取分页的文章数据
 ArtController.allArticle = async (req,res)=>{
     // 接收字符串
-    let {page,limit:pagesize}=req.query;
+    let {page,limit:pagesize,title,status}=req.query;
+    // 定义查询条件
+    let where='where 1';
+    // 有值 才拼接查询条件
+    title && (where += ` and t1.title like '%${title}%'`)
+    status && (where += ` and t1.status='${status}'`)
     // sql语句
     let offset = (page - 1)*pagesize;//分页算法得出的 当前页码-1 *每页显示的条数
     // let sql = `select * from article order by art_id desc limit ${offset},${pagesize}`
     let sql = `select t1.*,t2.name from article t1 left join category t2 on t1.cat_id = t2.cat_id 
+                ${where}
                 order by art_id desc limit ${offset},${pagesize}`;
 
-    let sql2 =`select count(*) as count from article`;
+    let sql2 =`select count(*) as count from article t1 ${where}`;
     // let promise1 =  mysqlquery(sql); // [{},{},{}] 返回的数组 里面是对象
     // let data= await mysqlquery(sql);//[{},{},{}] 返回的数组 里面是对象
     let promise1=mysqlquery(sql);
     let promise2=mysqlquery(sql2);
+    // 并行
     let result = await Promise.all([promise1,promise2]);
     let data=result[0];
     let count =result[1][0].count

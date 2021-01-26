@@ -22,6 +22,14 @@ router.get('/cateCount',async (req,res)=>{
     let data = await mysqlquery(sql); // [{},{},{},{}]
     res.json(data)
 })
+
+// 统计当前的每月的文章总数
+router.get('/artCount',async (req,res)=>{
+    let sql=`select month(publish_date) month,count(*) as total from article
+    where year(publish_date)=year(now()) group by month(publish_date)`
+    let data = await mysqlquery(sql);
+    res.json(data)
+})
 // console.log(Sortcontroller);
 
 // 在路由器身上绑定路由
