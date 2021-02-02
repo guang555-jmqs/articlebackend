@@ -17,11 +17,11 @@
     <ul class="layui-nav layui-layout-right">
         <li class="layui-nav-item">
             <a href="javascript:;">
-                <img src="http://t.cn/RCzsdCq" class="layui-nav-img">
-               <span id="username">康仔</span>
+                <img id="avatar" src="" class="layui-nav-img" alt="暂无头像">
+               <span id="username"></span>
             </a>
             <dl class="layui-nav-child">
-                <dd><a href="">基本资料</a></dd>
+                <dd><a href="javascript:;" onclick="showUserInfo()" >基本资料</a></dd>
                 <dd><a href="">安全设置</a></dd>
             </dl>
         </li>
@@ -31,9 +31,66 @@
 <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.js"></script>
 <script src="/public/layui/layui.all.js"></script>
 <script>
-    let layer=layui.layer
+let userInfoTpl = `
+      <form id="userInfoTpl"  class="layui-form" action="" style="padding:20px;">
+          <div class="layui-form-item">
+            <label class="layui-form-label">用户名</label>
+            <div class="layui-input-inline">
+              <!-- <input type="text" name="username" class="layui-input" disabled  autocomplete="off" > -->
+              <div id="form-username" style="display:flex;align-items: center;" class="layui-input"></div>
+            </div>
+          </div>
+          <div class="layui-form-item">
+            <label class="layui-form-label">头像</label>
+            <div class="layui-input-inline">
+                <img src="" alt="" id='avatar-preview' style="width:100px">
+            </div>
+            <button type="button" class="layui-btn" id="uploadAvatar">上传图片</button>
+
+            <div class="layui-input-block">
+            <input type="radio" name="sex" value="男" title="男" checked="">
+            <input type="radio" name="sex" value="女" title="女">
+            <input type="radio" name="sex" value="禁" title="禁用" disabled="">
+            </div>
+
+            <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">签名</label>
+            <div class="layui-input-block">
+            <textarea placeholder="这个人很懒，什么都没留下" class="layui-textarea"></textarea>
+            </div>
+
+           
+          </div>
+          
+          <div class="layui-form-item">
+            <div class="layui-input-block">
+              <button type="submit" class="layui-btn" lay-submit="" lay-filter="demo1">保存</button>
+              <button type="reset" class="layui-btn layui-btn-primary">取消</button>
+            </div>
+          </div>
+        </form>`;
+
+
+
+
+
+    window.onload=function(){
+    // let layer=layui.layer
+    let userInfo=JSON.parse(localStorage.getItem('userInfo') || '{}');
+    let avatar=userInfo.avatar || '/public/imges/default.png'
     //设置当前用户的信息
-    document.getElementById('username').innerHTML=localStorage.getItem('username');
+    document.getElementById('username').innerHTML=userInfo.username;
+    // let defaultAvatar='/public/images/default.png'
+    document.getElementById('avatar').src=avatar
+
+    // 回显用户名到个人信息表单中
+    $('#form-username').html(userInfo.username)
+
+    layui.use(['layer','form','upload'],function(){
+        let layer=layui.layer
+        let form = layui.form;
+        let upload=layui.upload
+   
     //退出功能
     document.getElementById('logout').onclick=function(){
         // 清空session
@@ -44,4 +101,55 @@
             location.href='/login'
         })
     }
+    //弹出显示用户的信息
+    function showUserInfo(){
+        layer.open({
+            title:'个人信息',
+            type:'1',
+            skin:'layui-layer-rim',//边框
+            area:['720px','640px'],
+            content:userInfoTpl,
+            success:function(){
+                //修改上传的头像
+                $('#userInfoTpl').find('#form-username').html(userInfo.username)
+                $('#userInfoTol #avatar-preview').attr('src',avatar)
+                
+                initUpload(upload,layer)
+            }
+        });
+    }
+        window['showUserInfo']=showUserInfo
+    });
+    }
+
+    //初始化上传图片的组件
+    function initUpload(upload,layer){
+        var uploadInst=upload.render({
+            elem:'#uploadAvatar'
+            ,url:'/upload'
+            ,done:function(res){
+                // 上传失败
+                if(res.code == 0){
+                    let src=res.src;
+                    $('#userInfoTpl #avatar-preview').attr('src',src)
+                    // 更新用户的头像 upload
+                    // 不需要user_id 是因为在session中保存着
+                    $.post('/updateAvatar',{avatar:src},(res)=>{
+                        let {code,message}=res
+                        // 成功 原头像变成修改之后的头像
+                        if(code == 0){
+                            layer.msg(message);
+                            $('#favatar').attr('src',src)
+                            // 也需要更新本地存储里面的头像数据
+                            let olduserInfo=JSON.parse(localStorage.getItem('userInfo') || '{}')
+                            olduserInfo.avatar=src
+                            localStorage.setItem('userInfo',JSON.stringify(olduserInfo))
+                        }
+                    },'json')
+                }
+            }
+        })
+    }
+  
+
 </script>

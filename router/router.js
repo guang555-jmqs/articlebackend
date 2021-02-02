@@ -103,6 +103,9 @@ router.get('/login',(req,res)=>{
 // 登录系统的接口
 router.post('/singin',UserController.singin)
 
+//更新用户头像
+router.post('/updateAvatar',UserController.updateAvatar)
+
 // 退出登录系统的接口
 router.get('/logout',(req,res)=>{
     // 清空session并重定向到登录页面
@@ -111,6 +114,8 @@ router.get('/logout',(req,res)=>{
     })
     res.json({message:'退出成功'})
 })
+
+
 
 // 匹配失败的的路由
 router.all('*',(req,res)=>{

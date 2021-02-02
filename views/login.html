@@ -82,11 +82,12 @@ $('#singinBtn').on('click',()=>{
     //发送post请求
     $.post('/singin',{username,password},(res)=>{
         layer.close(index)
-        let {errcode,message}=res;
+        let {errcode,message,userInfo}=res;
+        let {username,avatar,last_login_date}=userInfo
         if(errcode == 0){
-            layer.msg(`欢迎${username}登录`)
+            layer.msg(`欢迎${userInfo.username}登录`)
             // 把用户名存储到本地存储,实现跨页面共享数据
-            localStorage.setItem('username',username)
+            localStorage.setItem('userInfo',JSON.stringify(userInfo))
             location.href='/'
         }
         // console.log(res)
